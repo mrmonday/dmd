@@ -188,6 +188,8 @@ struct Param
 
     char doXGeneration;         // write JSON file
     char *xfilename;            // write JSON file to xfilename
+    
+    char doJsGeneration;         // write Javascript file
 
     unsigned debuglevel;        // debug level
     Array *debugids;            // debug identifiers

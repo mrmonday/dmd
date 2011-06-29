@@ -35,7 +35,7 @@ ifeq (OSX,$(TARGET))
     ENVP= MACOSX_DEPLOYMENT_TARGET=10.3
     SDK=/Developer/SDKs/MacOSX10.4u.sdk #doesn't work because can't find <stdarg.h>
     SDK=/Developer/SDKs/MacOSX10.5.sdk
-    #SDK=/Developer/SDKs/MacOSX10.6.sdk
+    SDK=/Developer/SDKs/MacOSX10.6.sdk
 
     TARGET_CFLAGS=-isysroot ${SDK}
     LDFLAGS=-lstdc++ -isysroot ${SDK} -Wl,-syslibroot,${SDK} -framework CoreServices
@@ -52,8 +52,10 @@ CC=g++ -m$(MODEL) $(TARGET_CFLAGS)
 
 WARNINGS=-Wno-deprecated -Wstrict-aliasing
 
-#GFLAGS = $(WARNINGS) -D__near= -D__pascal= -fno-exceptions -g -DDEBUG=1 -DUNITTEST $(COV)
-GFLAGS = $(WARNINGS) -D__near= -D__pascal= -fno-exceptions -O2
+JSBE_LIB=-L/Library/Compilers/dmd2/osx/lib -lphobos2 ../dsrc/libdmdjsbe.a
+
+GFLAGS = $(WARNINGS) -DJS_BACKEND -D__near= -D__pascal= -fno-exceptions -g -DDEBUG=1 -DUNITTEST $(COV)
+#GFLAGS = $(WARNINGS) -D__near= -D__pascal= -fno-exceptions -O2
 
 CFLAGS = $(GFLAGS) -I$(ROOT) -DMARS=1 -DTARGET_$(TARGET)=1
 MFLAGS = $(GFLAGS) -I$C -I$(TK) -DMARS=1 -DTARGET_$(TARGET)=1
@@ -61,7 +63,7 @@ MFLAGS = $(GFLAGS) -I$C -I$(TK) -DMARS=1 -DTARGET_$(TARGET)=1
 CH= $C/cc.h $C/global.h $C/parser.h $C/oper.h $C/code.h $C/type.h \
 	$C/dt.h $C/cgcv.h $C/el.h $C/iasm.h
 
-DMD_OBJS = \
+DMD_OBJS = jsbridge.o \
 	access.o array.o attrib.o bcomplex.o bit.o blockopt.o \
 	cast.o code.o cg.o cg87.o cgcod.o cgcs.o cgelem.o cgen.o \
 	cgreg.o cgsched.o class.o cod1.o cod2.o cod3.o cod4.o cod5.o \
@@ -87,7 +89,7 @@ else
     DMD_OBJS += libelf.o elfobj.o
 endif
 
-SRC = win32.mak posix.mak \
+SRC = win32.mak posix.mak jsbridge.cpp \
 	mars.c enum.c struct.c dsymbol.c import.c idgen.c impcnvgen.c \
 	identifier.c mtype.c expression.c optimize.c template.h \
 	template.c lexer.c declaration.c cast.c cond.h cond.c link.c \
@@ -137,7 +139,7 @@ SRC = win32.mak posix.mak \
 all: dmd
 
 dmd: $(DMD_OBJS)
-	$(ENVP) gcc -o dmd -m$(MODEL) $(COV) $(DMD_OBJS) $(LDFLAGS)
+	$(ENVP) gcc -o dmd -m$(MODEL) $(JSBE_LIB) $(COV) $(DMD_OBJS) $(LDFLAGS)
 
 clean:
 	rm -f $(DMD_OBJS) dmd optab.o id.o impcnvgen idgen id.c id.h \
@@ -183,6 +185,9 @@ aav.o: $(ROOT)/aav.c
 	$(CC) -c $(GFLAGS) -I$(ROOT) $<
 
 access.o: access.c
+	$(CC) -c $(CFLAGS) $<
+
+jsbridge.o: jsbridge.cpp
 	$(CC) -c $(CFLAGS) $<
 
 aliasthis.o: aliasthis.c

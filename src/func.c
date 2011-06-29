@@ -357,6 +357,7 @@ void FuncDeclaration::semantic(Scope *sc)
     if (!fbody && (fensure || frequire) && !(id && isVirtual()))
         error("in and out contracts require function body");
 
+#if 0
     /* Template member functions aren't virtual:
      *   interface TestInterface { void tpl(T)(); }
      * and so won't work in interfaces
@@ -368,6 +369,7 @@ void FuncDeclaration::semantic(Scope *sc)
     {
         error("template member functions are not allowed in interface %s", id->toChars());
     }
+#endif
 
     cd = parent->isClassDeclaration();
     if (cd)

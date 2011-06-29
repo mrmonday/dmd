@@ -46,6 +46,14 @@ void getenv_setargv(const char *envvar, int *pargc, char** *pargv);
 void obj_start(char *srcfile);
 void obj_end(Library *library, File *objfile);
 
+#if JS_BACKEND
+extern "C++" void js_generate(Array*);
+#else
+void js_generate(Array*)
+{
+    error("JavaScript backend not enabled");
+}
+#endif
 Global global;
 
 Global::Global()
@@ -302,6 +310,7 @@ Usage:\n\
   -vtls          list all variables going into thread local storage\n\
   -w             enable warnings\n\
   -wi            enable informational warnings\n\
+  -js            enable JavaScript output\n\
   -X             generate JSON file\n\
   -Xffilename    write JSON file to filename\n\
 ", fpic);
@@ -587,6 +596,8 @@ int main(int argc, char *argv[])
                         goto Lerror;
                 }
             }
+            else if (strcmp(p + 1, "js") == 0)
+                global.params.doJsGeneration = 1;
             else if (strcmp(p + 1, "ignore") == 0)
                 global.params.ignoreUnsupportedPragmas = 1;
             else if (strcmp(p + 1, "property") == 0)
@@ -1285,6 +1296,9 @@ int main(int argc, char *argv[])
 
     if (global.params.doXGeneration)
         json_generate(&modules);
+
+    if (global.params.doJsGeneration)
+        js_generate(&modules);
 
     if (global.params.oneobj)
     {
