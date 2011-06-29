@@ -273,15 +273,10 @@ void Module::genobjfile(int multiobj)
         covb = (unsigned *)calloc((numlines + 32) / 32, sizeof(*covb));
     }
 
-    //printf("null: %d;\n", NULL);
     for (int i = 0; i < members->dim; i++)
     {
-      //  printf("dim: %d; i: %d;\n", members->dim, i);
         Dsymbol *member = (Dsymbol *)members->data[i];
-        //printf("func?: %p;\n", member->isFuncDeclaration());
-        //printf("func?: %p;\n", (FuncDeclaration*)member);
         member->toObjFile(multiobj);
-        //printf("postmem\n");
     }
 
     if (global.params.cov)
