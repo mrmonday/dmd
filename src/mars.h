@@ -364,6 +364,7 @@ enum LINK
     LINKcpp,
     LINKwindows,
     LINKpascal,
+    LINKjs
 };
 
 enum DYNCAST

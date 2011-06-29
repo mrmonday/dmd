@@ -803,6 +803,8 @@ enum LINK Parser::parseLinkage()
             link = LINKpascal;
         else if (id == Id::D)
             link = LINKd;
+        else if (id == Id::JavaScript)
+            link = LINKjs;
         else if (id == Id::C)
         {
             link = LINKc;
@@ -821,7 +823,7 @@ enum LINK Parser::parseLinkage()
         }
         else
         {
-            error("valid linkage identifiers are D, C, C++, Pascal, Windows, System");
+            error("valid linkage identifiers are D, C, C++, Pascal, JavaScript, Windows, System");
             link = LINKd;
         }
     }

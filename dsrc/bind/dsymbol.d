@@ -52,10 +52,14 @@ interface EnumDeclaration{}
 interface DeleteDeclaration{}
 interface SymbolDeclaration{}
 interface AttribDeclaration{}
+interface LinkDeclaration{}
 interface OverloadSet{}
 
-void funcDeclToJsBuffer(FuncDeclaration, Duffer);
-void varDeclToJsBuffer(VarDeclaration, Duffer);
+LinkDeclaration isLinkDeclaration(Dsymbol d);
+
+void declToJsBuffer(FuncDeclaration, Duffer);
+void declToJsBuffer(VarDeclaration, Duffer);
+void declToJsBuffer(LinkDeclaration, Duffer);
 
 enum PROT
 {
@@ -207,10 +211,11 @@ interface Dsymbol : DmObject
         writefln("isFuncAlias: %s", !!isFuncAliasDeclaration());
         writefln("isImport: %s", !!isImport());
         writefln("isOverloadSet: %s", !!isOverloadSet());*/
+        //writefln("sym:  %s", to!string(toChars()));
         if (auto fd = isFuncDeclaration())
         {
-            //writefln("func:  %s", to!string(toChars()));
-            funcDeclToJsBuffer(fd, buf);
+           // writefln("func:  %s", to!string(toChars()));
+            declToJsBuffer(fd, buf);
         }
         else if (auto cd = isClassDeclaration())
         {
@@ -219,13 +224,17 @@ interface Dsymbol : DmObject
         }
         else if (auto vd = isVarDeclaration())
         {
-            //writefln("var:    %s", to!string(toChars()));
+           // writefln("var:    %s", to!string(toChars()));
             //writefln("varpar: %s", !!vd.parent.isFuncDeclaration());
-            varDeclToJsBuffer(vd, buf);
+            declToJsBuffer(vd, buf);
         }
         else if (auto i = isImport())
         {
             stderr.writefln("ignoring import %s", to!string(toChars()));
+        }
+        else if (auto ld = isLinkDeclaration(this))
+        {
+            declToJsBuffer(ld, buf);
         }
         else
         {

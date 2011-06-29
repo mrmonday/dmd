@@ -261,6 +261,7 @@ Symbol *VarDeclaration::toSymbol()
                 break;
 
             case LINKc:
+            case LINKjs:
                 m = mTYman_c;
                 break;
 

@@ -1,6 +1,7 @@
 module bind.expression;
 
 import bind.arraytypes;
+import bind.declaration;
 import bind.hdrgen;
 import bind.identifier;
 import bind.interpret;
@@ -135,6 +136,10 @@ interface Expression : DmObject
         {
             expToJsBuffer(se, buf);
         }
+        else if (auto dve = isDotVarExp(this))
+        {
+            expToJsBuffer(dve, buf);
+        }
         else
         {
             assert(0, "unhandled expression: " ~ to!string(toTypeString(this)));
@@ -148,6 +153,7 @@ const(char*) toTypeString(Expression);
 void expToJsBuffer(ArrayLengthExp ale, Duffer buf);
 void expToJsBuffer(CallExp ce, Duffer buf);
 void expToJsBuffer(StringExp se, Duffer buf);
+void expToJsBuffer(DotVarExp dve, Duffer buf);
 
 interface IntegerExp : Expression
 {
@@ -310,6 +316,10 @@ interface DotTemplateExp : UnaExp
 
 interface DotVarExp : UnaExp
 {
+    mixin CppFields!(DotVarExp,
+        Declaration, "var",
+        int, "hasOverloads"
+    );
 }
 
 interface DotTemplateInstanceExp : UnaExp

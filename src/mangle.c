@@ -111,6 +111,7 @@ char *Declaration::mangle()
             switch (linkage)
             {
                 case LINKd:
+                case LINKjs:
                     break;
 
                 case LINKc:

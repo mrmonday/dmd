@@ -12,6 +12,7 @@ enum LINK
     LINKcpp,
     LINKwindows,
     LINKpascal,
+    LINKjs
 }
 
 enum MATCH
@@ -29,6 +30,10 @@ struct Loc
     const char* filename;
     uint linnum;
 }
+
+void warning(Loc loc, const char *format, ...);
+void error(Loc loc, const char *format, ...);
+void fatal();
 
 struct Param
 {

@@ -1,5 +1,6 @@
 module javascript;
 
+import bind.attrib;
 import bind.declaration;
 import bind.dsymbol : Dsymbol;
 import bind.expression;
@@ -50,7 +51,7 @@ void js_generate(Array modules)
 bool isMain = false;
 
 // BUG in/out contracts
-void funcDeclToJsBuffer(FuncDeclaration func, Duffer buf)
+void declToJsBuffer(FuncDeclaration func, Duffer buf)
 {
     if (!func.fbody)
         return;
@@ -89,7 +90,7 @@ void funcDeclToJsBuffer(FuncDeclaration func, Duffer buf)
     buf.writeln();
 }
 
-void varDeclToJsBuffer(VarDeclaration vd, Duffer buf)
+void declToJsBuffer(VarDeclaration vd, Duffer buf)
 {
     if (vd.parent && vd.parent.isFuncDeclaration())
     {
@@ -99,6 +100,20 @@ void varDeclToJsBuffer(VarDeclaration vd, Duffer buf)
     {
         assert(0);
     }
+}
+
+void declToJsBuffer(LinkDeclaration ld, Duffer buf)
+{
+    if (ld.linkage != LINK.LINKjs)
+    {
+        error(ld.loc, "Unsupported linkage attribute when outputting JavaScript");
+        fatal();
+    }
+   // Ignore everything, it's just so it can be used.
+   /* foreach (Dsymbol d; ld.decl)
+    {
+
+    }*/
 }
 
 /**********************************************************
@@ -184,3 +199,11 @@ void expToJsBuffer(StringExp se, Duffer buf)
 {
     buf.writef(`%s`, to!string(se.toChars()));
 }
+
+void expToJsBuffer(DotVarExp dve, Duffer buf)
+{
+    dve.e1.toJsBuffer(buf);
+    buf.writef(".%s", to!string(dve.var.toChars()));
+    //dve.var.toJsBuffer(buf);
+}
+

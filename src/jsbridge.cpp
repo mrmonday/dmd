@@ -1,3 +1,4 @@
+#include "attrib.h"
 #include "expression.h"
 #include "statement.h"
 #include <typeinfo>
@@ -16,6 +17,8 @@ const char *toTypeString(Expression *e)
 {
     return typeid(*e).name();
 }
+
+LinkDeclaration *isLinkDeclaration(Dsymbol *d) { return dynamic_cast<LinkDeclaration*>(d); }
 
 // Almost completely auto-generated with:
 // cat dsrc/bind/expression.d | grep interface | cut -f2 -d' ' | \
