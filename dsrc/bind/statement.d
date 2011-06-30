@@ -24,6 +24,7 @@ void statementToJsBuffer(ExpStatement, Duffer);
 void statementToJsBuffer(IfStatement, Duffer);
 void statementToJsBuffer(ReturnStatement, Duffer);
 void statementToJsBuffer(ScopeStatement, Duffer);
+void statementToJsBuffer(ForStatement, Duffer);
 
 struct InlineDoState;
 struct InlineCostState;
@@ -105,7 +106,12 @@ interface Statement : DmObject
         }
         else if (auto es = isExpStatement())
         {
+            writefln("expstatement: %s", to!string(toChars()));
             statementToJsBuffer(es, buf);
+        }
+        else if (auto fs = isForStatement(this))
+        {
+            statementToJsBuffer(fs, buf);
         }
         else
         {
@@ -116,6 +122,7 @@ interface Statement : DmObject
 mixin(Statement.cppMethods);
 
 const(char*) toTypeString(Statement);
+ForStatement isForStatement(Statement);
 
 interface PeelStatement : Statement
 {
@@ -164,6 +171,12 @@ interface DoStatement : Statement
 
 interface ForStatement : Statement
 {
+    mixin CppFields!(ForStatement,
+        Statement, "init",
+        Expression, "condition",
+        Expression, "increment",
+        Statement, "body_"
+    );
 }
 
 interface ForeachStatement : Statement

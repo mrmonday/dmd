@@ -120,10 +120,13 @@ void declToJsBuffer(LinkDeclaration ld, Duffer buf)
  * Statements
  */
 
+bool forInit = false;
+
 void statementToJsBuffer(ExpStatement ss, Duffer buf)
 {
     ss.exp.toJsBuffer(buf);
-    buf.writeln(";");
+    if (!forInit)
+        buf.writeln(";");
 }
 
 void statementToJsBuffer(IfStatement ifs, Duffer buf)
@@ -155,14 +158,36 @@ void statementToJsBuffer(ReturnStatement rs, Duffer buf)
     buf.writeln(";");
 }
 
+void statementToJsBuffer(ForStatement fs, Duffer buf)
+{
+    buf.write("for (");
+    forInit = true;
+    fs.init.toJsBuffer(buf);
+    forInit = false;
+    buf.write("; ");
+    fs.condition.toJsBuffer(buf);
+    buf.write("; ");
+    fs.increment.toJsBuffer(buf);
+    buf.write(") ");
+    fs.body_.toJsBuffer(buf);
+}
+
 /**********************************************************
  * Expressions
  */
 
-void unaExpToJsBuffer(string str, T : UnaExp)(T be, Duffer buf)
+void unaExpToJsBuffer(string str, T : UnaExp)(T be, Duffer buf, bool post=false)
 {
-    buf.write(str);
-    be.e1.toJsBuffer(buf);
+    if (post)
+    {
+        be.e1.toJsBuffer(buf);
+        buf.write(str);
+    }
+    else
+    {
+        buf.write(str);
+        be.e1.toJsBuffer(buf);
+    }
 }
 
 void binExpToJsBuffer(string str, T : BinExp)(T be, Duffer buf)

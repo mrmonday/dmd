@@ -20,6 +20,8 @@ const char *toTypeString(Expression *e)
 
 LinkDeclaration *isLinkDeclaration(Dsymbol *d) { return dynamic_cast<LinkDeclaration*>(d); }
 
+ForStatement *isForStatement(Statement *s) { return dynamic_cast<ForStatement*>(s); }
+
 // Almost completely auto-generated with:
 // cat dsrc/bind/expression.d | grep interface | cut -f2 -d' ' | \
 // perl -pe 's/(.*)/\1 *is\1(Expression *e) { return dynamic_cast<\1*>(e); }/' >> src/jsbridge.cpp

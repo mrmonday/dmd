@@ -5,6 +5,7 @@ import bind.dsymbol;
 import bind.expression;
 import bind.hdrgen;
 import bind.identifier;
+import bind.init;
 import bind.inline;
 import bind.interpret;
 import bind.irstate;
@@ -205,4 +206,20 @@ mixin(FuncDeclaration.cppMethods);
 
 interface VarDeclaration : Declaration
 {
+    mixin CppFields!(VarDeclaration,
+        Initializer, "init",
+        uint, "offset",
+        int, "noscope",                 // no auto semantics
+        FuncDeclarationsRaw, "nestedrefs", // referenced by these lexically nested functions
+        bool, "isargptr",              // if parameter that _argptr points to
+        int, "ctorinit",               // it has been initialized in a ctor
+        int, "onstack",                // 1: it has been allocated on the stack
+                                    // 2: on stack, run destructor anyway
+        int, "canassign",              // it can be assigned to
+        Dsymbol, "aliassym",          // if redone as alias to another symbol
+
+        // When interpreting, these hold the value (NULL if value not determinable)
+        // The various functions are used only to detect compiler CTFE bugs
+        Expression, "literalvalue"
+    );
 }

@@ -140,6 +140,37 @@ interface Expression : DmObject
         {
             expToJsBuffer(dve, buf);
         }
+        else if (auto de = isDeclarationExp(this))
+        {
+            de.declaration.toJsBuffer(buf);
+        }
+        else if (auto ce = isCmpExp(this))
+        {
+            switch (ce.op)
+            {
+                case TOK.TOKlt:
+                    binExpToJsBuffer!"<"(ce, buf);
+                    break;
+                case TOK.TOKgt:
+                    binExpToJsBuffer!">"(ce, buf);
+                    break;
+                case TOK.TOKle:
+                    binExpToJsBuffer!"<="(ce, buf);
+                    break;
+                case TOK.TOKge:
+                    binExpToJsBuffer!">="(ce, buf);
+                    break;
+                default:
+                    assert(0, "Unimplemented comparison");
+            }
+        }
+        else if (auto pe = isPostExp(this))
+        {
+            if (pe.op == TOK.TOKplusplus)
+                unaExpToJsBuffer!"++"(pe, buf, true);
+            else
+                unaExpToJsBuffer!"--"(pe, buf, true);
+        }
         else
         {
             assert(0, "unhandled expression: " ~ to!string(toTypeString(this)));
@@ -257,6 +288,9 @@ interface FuncExp : Expression
 
 interface DeclarationExp : Expression
 {
+    mixin CppFields!(DeclarationExp,
+        Declaration, "declaration" // Bug should be Dsymbol
+    );
 }
 
 interface TypeidExp : Expression
@@ -403,7 +437,8 @@ interface IndexExp : BinExp
 
 /* For both i++ and i--
  */
-interface PostExp : BinExp
+// BUG interface PostExp : BinExp
+interface PostExp : UnaExp
 {
 }
 
