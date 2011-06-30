@@ -11,6 +11,7 @@ const char *toTypeString(Expression *e) { return typeid(*e).name(); }
 
 LinkDeclaration *isLinkDeclaration(Dsymbol *d) { return dynamic_cast<LinkDeclaration*>(d); }
 
+CompoundDeclarationStatement *isCompoundDeclarationStatement(Statement *s) { return dynamic_cast<CompoundDeclarationStatement*>(s); }
 ForStatement *isForStatement(Statement *s) { return dynamic_cast<ForStatement*>(s); }
 
 // Almost completely auto-generated with:
@@ -79,6 +80,7 @@ PostExp *isPostExp(Expression *e) { return dynamic_cast<PostExp*>(e); }
 PreExp *isPreExp(Expression *e) { return dynamic_cast<PreExp*>(e); }
 AssignExp *isAssignExp(Expression *e) { return dynamic_cast<AssignExp*>(e); }
 ConstructExp *isConstructExp(Expression *e) { return dynamic_cast<ConstructExp*>(e); }
+AddAssignExp *isAddAssignExp(Expression *e) { return dynamic_cast<AddAssignExp*>(e); }
 // Missing mixin-generated
 PowAssignExp *isPowAssignExp(Expression *e) { return dynamic_cast<PowAssignExp*>(e); }
 AddExp *isAddExp(Expression *e) { return dynamic_cast<AddExp*>(e); }

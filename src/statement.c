@@ -1630,6 +1630,8 @@ Lagain:
             Statement *ds = new ExpStatement(loc, value);
 
             body = new CompoundStatement(loc, ds, body);
+            if (global.params.doJsGeneration)
+                body = new ScopeStatement(loc, body);
 
             ForStatement *fs = new ForStatement(loc, forinit, cond, increment, body);
             s = fs->semantic(sc);

@@ -86,7 +86,23 @@ interface Statement : DmObject
         writefln("statement to buf: %s", !!isIfStatement());
         writefln("statement to buf: %s", !!isScopeStatement());
         writefln("statement to buf: %s", !!isReturnStatement());*/
-        if (auto cs = isCompoundStatement())
+        if (auto cds = isCompoundDeclarationStatement(this))
+        {
+            if (cds.statements)
+            {
+                uint i;
+                foreach (Statement s; cds.statements)
+                {
+                    i++;
+                    s.toJsBuffer(buf);
+                    if (i < cds.statements.dim)
+                    {
+                        buf.write(", ");
+                    }
+                }
+            }
+        }
+        else if (auto cs = isCompoundStatement())
         {
             if (cs.statements)
             {
@@ -119,6 +135,7 @@ interface Statement : DmObject
         }
         else
         {
+            stderr.writefln("unhandled statement: %s", to!string(toChars()));
             assert(0, "unhandled statement: " ~ to!string(toTypeString(this)));
         }
     }
@@ -127,6 +144,7 @@ mixin(Statement.cppMethods);
 
 const(char*) toTypeString(Statement);
 ForStatement isForStatement(Statement);
+CompoundDeclarationStatement isCompoundDeclarationStatement(Statement);
 
 interface PeelStatement : Statement
 {

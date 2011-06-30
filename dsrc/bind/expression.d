@@ -98,7 +98,11 @@ interface Expression : DmObject
         //writefln("expression: %s", to!string(toChars()));
         if (auto ie = isIntegerExp(this))
         {
-            buf.write(to!string(ie.toChars()));
+            buf.write(to!string(ie.toInteger()));
+        }
+        else if (auto re = isRealExp(this))
+        {
+            buf.write(to!string(re.toReal()));
         }
         else if (auto aae = isAndAndExp(this))
         {
@@ -113,6 +117,10 @@ interface Expression : DmObject
         else if (auto ae = isAssignExp(this))
         {
             binExpToJsBuffer!"="(ae, buf);
+        }
+        else if (auto ae = isAddAssignExp(this))
+        {
+            binExpToJsBuffer!"+="(ae, buf);
         }
         else if (auto ve = isVarExp(this))
         {
@@ -174,8 +182,21 @@ interface Expression : DmObject
             else
                 unaExpToJsBuffer!"--"(pe, buf, true);
         }
+        else if (auto ale = isArrayLiteralExp(this))
+        {
+            expToJsBuffer(ale, buf);
+        }
+        else if (auto se = isSliceExp(this))
+        {
+            expToJsBuffer(se, buf);
+        }
+        else if (auto ie = isIndexExp(this))
+        {
+            expToJsBuffer(ie, buf);
+        }
         else
         {
+            stderr.writefln("unhandled expression: %s", to!string(toChars()));
             assert(0, "unhandled expression: " ~ to!string(toTypeString(this)));
         }
     }
@@ -188,6 +209,9 @@ void expToJsBuffer(ArrayLengthExp ale, Duffer buf);
 void expToJsBuffer(CallExp ce, Duffer buf);
 void expToJsBuffer(StringExp se, Duffer buf);
 void expToJsBuffer(DotVarExp dve, Duffer buf);
+void expToJsBuffer(ArrayLiteralExp ale, Duffer buf);
+void expToJsBuffer(SliceExp se, Duffer buf);
+void expToJsBuffer(IndexExp ie, Duffer buf);
 
 interface IntegerExp : Expression
 {
@@ -199,6 +223,9 @@ interface ErrorExp : IntegerExp
 
 interface RealExp : Expression
 {
+    mixin CppFields!(RealExp,
+        real, "value"
+    );
 }
 
 interface ComplexExp : Expression
@@ -239,6 +266,9 @@ interface TupleExp : Expression
 
 interface ArrayLiteralExp : Expression
 {
+    mixin CppFields!(ArrayLiteralExp,
+        Expressions, "elements"
+    );
 }
 
 interface AssocArrayLiteralExp : Expression
@@ -416,6 +446,11 @@ interface CastExp : UnaExp
 
 interface SliceExp : UnaExp
 {
+    mixin CppFields!(SliceExp,
+        Expression, "upr",           // NULL if implicit 0
+        Expression,  "lwr",            // NULL if implicit [length - 1]
+        VarDeclaration, "lengthVar"
+    );
 }
 
 interface ArrayLengthExp : UnaExp
@@ -436,6 +471,10 @@ interface CommaExp : BinExp
 
 interface IndexExp : BinExp
 {
+    mixin CppFields!(IndexExp,
+        VarDeclaration, "lengthVar",
+        int, "modifiable"
+    );
 }
 
 /* For both i++ and i--
@@ -462,7 +501,7 @@ interface ConstructExp : AssignExp
 string ASSIGNEXP(string str)
 {
     return `
-interface op` ~ str ~ `AssignExp : BinAssignExp
+interface ` ~ str ~ `AssignExp : BinAssignExp
 {
 }
     `;
@@ -644,6 +683,7 @@ PostExp isPostExp(Expression e);
 PreExp isPreExp(Expression e);
 AssignExp isAssignExp(Expression e);
 ConstructExp isConstructExp(Expression e);
+AddAssignExp isAddAssignExp(Expression e);
 // TODO Missing auto-generated
 PowAssignExp isPowAssignExp(Expression e);
 AddExp isAddExp(Expression e);

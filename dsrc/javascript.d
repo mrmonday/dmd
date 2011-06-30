@@ -244,7 +244,42 @@ void expToJsBuffer(DotVarExp dve, Duffer buf)
 {
     dve.e1.toJsBuffer(buf);
     buf.writef(".%s", to!string(dve.var.toChars()));
-    //dve.var.toJsBuffer(buf);
+}
+
+void expToJsBuffer(ArrayLiteralExp ale, Duffer buf)
+{
+    buf.write("[");
+    uint i;
+    foreach (Expression e; ale.elements)
+    {
+        i++;
+        e.toJsBuffer(buf);
+        if (i < ale.elements.dim)
+        {
+            buf.write(", ");
+        }
+    }
+    buf.write("]");
+}
+
+void expToJsBuffer(SliceExp se, Duffer buf)
+{
+    if (se.lwr is null && se.upr is null)
+    {
+        se.e1.toJsBuffer(buf);
+    }
+    else
+    {
+        assert(0, "Unimplemented sliceexp");
+    }
+}
+
+void expToJsBuffer(IndexExp ie, Duffer buf)
+{
+    ie.e1.toJsBuffer(buf);
+    buf.write("[");
+    ie.e2.toJsBuffer(buf);
+    buf.write("]");
 }
 
 /**********************************************************
