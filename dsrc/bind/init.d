@@ -44,7 +44,6 @@ interface Initializer : DmObject
     {
         if (auto ei = isExpInitializer())
         {
-            writefln("exp init");
             initToJsBuffer(ei, buf);
         }
         else

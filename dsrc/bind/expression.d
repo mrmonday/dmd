@@ -110,6 +110,10 @@ interface Expression : DmObject
             binExpToJsBuffer!"||"(ooe, buf);
             //orOrExpToJsBuffer(ooe, buf);
         }
+        else if (auto ae = isAssignExp(this))
+        {
+            binExpToJsBuffer!"="(ae, buf);
+        }
         else if (auto ve = isVarExp(this))
         {
             buf.write(to!string(toChars()));

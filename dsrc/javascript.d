@@ -95,12 +95,13 @@ void declToJsBuffer(VarDeclaration vd, Duffer buf)
 {
     if (vd.parent && vd.parent.isFuncDeclaration())
     {
-        buf.write(to!string(vd.toChars()));
         if (vd.init)
         {
-            buf.write(" = ");
+            //buf.write(" = ");
             vd.init.toJsBuffer(buf);
         }
+        else
+            buf.write(to!string(vd.toChars()));
     }
     else
     {
@@ -244,7 +245,6 @@ void expToJsBuffer(DotVarExp dve, Duffer buf)
 
 void initToJsBuffer(ExpInitializer ei, Duffer buf)
 {
-    writefln("exp init2");
     ei.exp.toJsBuffer(buf);
 }
 
