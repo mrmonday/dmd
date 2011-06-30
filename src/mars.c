@@ -1299,8 +1299,7 @@ int main(int argc, char *argv[])
 
     if (global.params.doJsGeneration)
         js_generate(&modules);
-
-    if (global.params.oneobj)
+    else if (global.params.oneobj)
     {
         for (i = 0; i < modules.dim; i++)
         {

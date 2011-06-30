@@ -106,7 +106,7 @@ interface Statement : DmObject
         }
         else if (auto es = isExpStatement())
         {
-            writefln("expstatement: %s", to!string(toChars()));
+            //writefln("expstatement: %s", to!string(toChars()));
             statementToJsBuffer(es, buf);
         }
         else if (auto fs = isForStatement(this))

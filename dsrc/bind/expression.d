@@ -41,9 +41,8 @@ interface Expression : DmObject
         Loc, "loc",                    // file location
         TOK, "op",                // handy to minimize use of dynamic_cast
         Type, "type",                 // !=NULL means that semantic() has been run
-        ubyte, "size"//,         // # of bytes in Expression so we can copy() it
-        // BUG This causes alignment for subclasses to not work for some reason :S
-        //ubyte, "parens"       // if this is a parenthesized expression 
+        ubyte, "size",         // # of bytes in Expression so we can copy() it
+        ubyte, "parens"       // if this is a parenthesized expression 
     );
     mixin CppMethods!(Expression,
         "toChars", char*

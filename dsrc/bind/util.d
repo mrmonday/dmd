@@ -51,7 +51,6 @@ template CppMangleParams(P...)
     }
     else static if (P.length == 1)
     {
-        //static if (is(p t : t*))
         static if (is(P[0] == const))
         {
             enum CppMangleParams = "K" ~ CppMangleType!(P[0]);
@@ -106,7 +105,6 @@ template CppMangleType(T)
 
 mixin template CppMethods(I, T...)
 {
-    //pragma(msg, CppMethodsImpl!(I, 1, T));
     mixin(CppMethodsImpl!(I, 1, T)[0] ~ `enum cppMethods = q{` ~ CppMethodsImpl!(I, 1, T)[1] ~ `};`);
 }
 template TypeTuple(T...)
@@ -115,31 +113,15 @@ template TypeTuple(T...)
 }
 template CppMethodsImpl(I, size_t i, T...)
 {
-    //alias PopAtString!(i, 0, 0, 0, T) pas;
-        //pragma(msg, "pas: " ~ PopAtString!(i, 0, 0, 0, T).stringof);
     static if (is(PopAtString!(i, 0, 0, 0, T) == TypeTuple!()))
     {
-        /*pragma(msg, I.stringof);
-        pragma(msg, i.stringof);
-        pragma(msg, T.stringof);
-        pragma(msg, "null: " ~ typeof(TypeTuple!("", "")).stringof);*/
         alias TypeTuple!("", "") CppMethodsImpl;
     }
     else
     {
-        /*static if (is(typeof(CppMethodsImpl!(I, i + 1, T)) == void))
-        {
-            enum CppMethodsImpl = CppMethod!(I, pas);
-            //pragma(msg, "moomin: " ~ CppMethodsImpl!(I, i + 1, T).stringof);
-        }
-        else
-        {*/
-            /*pragma(msg, "moo: " ~ CppMethodsImpl!(I, i + 1, T).stringof);
-            pragma(msg, "moo: " ~ CppMethod!(I, pas)[1]);*/
-            alias TypeTuple!(CppMethod!(I, PopAtString!(i, 0, 0, 0, T))[0] ~ CppMethodsImpl!(I, i + 1, T)[0],
-                             CppMethod!(I, PopAtString!(i, 0, 0, 0, T))[1] ~ CppMethodsImpl!(I, i + 1, T)[1])
-                  CppMethodsImpl;
-        //}
+        alias TypeTuple!(CppMethod!(I, PopAtString!(i, 0, 0, 0, T))[0] ~ CppMethodsImpl!(I, i + 1, T)[0],
+                         CppMethod!(I, PopAtString!(i, 0, 0, 0, T))[1] ~ CppMethodsImpl!(I, i + 1, T)[1])
+              CppMethodsImpl;
     }
 }
 
@@ -151,21 +133,10 @@ template CppMethodsImpl(I, size_t i, T...)
 /// b = current index
 template PopAtString(size_t i, size_t j, size_t a, size_t b, T...)
 {
-    /*pragma(msg, "i: " ~ i.stringof);
-    pragma(msg, "j: " ~ j.stringof);
-    pragma(msg, "a: " ~ a.stringof);
-    pragma(msg, "b: " ~ b.stringof);
-   // pragma(msg, "T: " ~ T.stringof);
-    pragma(msg, "T[b]: " ~ T[b].stringof);*/
     static if (is(typeof(T[b] == string)) && is(typeof({ string _ = T[b]; }())))
     {
-       /* pragma(msg, "we has a string");
-        pragma(msg, "i: " ~ i.stringof);
-        pragma(msg, "j: " ~ j.stringof);
-        pragma(msg, "i == j: " ~ (i == j).stringof);*/
         static if (i == j)
         {
-        //pragma(msg, "all our i's and j's are belong to us");
             alias TypeTuple!(T[a..b]) PopAtString;
         }
         else
@@ -191,12 +162,10 @@ template PopAtString(size_t i, size_t j, size_t a, size_t b, T...)
         {
             static if (j < i)
             {
-                //pragma(msg, "fail2");
                 alias TypeTuple!() PopAtString;
             }
             else
             {
-                //pragma(msg, "beans");
                 alias TypeTuple!(T[a..b+1]) PopAtString;
             }
         }
@@ -216,7 +185,6 @@ mixin template CppFields(I, T...) if (T.length % 2 == 0 /* Needs to check linkag
 
 template GetOffset(I) //if (is(I == interface))
 {
-    //pragma(msg, "Getting offset: "  ~ I.stringof);
     static if (is(I == interface))
     {
         static if (BaseTypeTuple!(I).length == 0)
@@ -229,7 +197,7 @@ template GetOffset(I) //if (is(I == interface))
         }
         else
         {
-            enum GetOffset = (void*).sizeof + ParentOffset!(I);
+            enum GetOffset = ParentOffset!(I);
         }
     }
     else
@@ -240,88 +208,47 @@ template GetOffset(I) //if (is(I == interface))
 
 template ParentOffset(T) if (is(T == interface))
 {
-    //pragma(msg, "GETTING OFFSET: "~T.stringof);
     static if (is(typeof({ enum _ = T._cpp_offset; }())))
     {
-        //pragma(msg, "cpp offs: " ~ T._cpp_offset.stringof);
         enum ParentOffset = T._cpp_offset;
     }
     else static if (BaseTypeTuple!(T).length == 1)
     {
-        //pragma(msg, "base offs: " ~ ParentOffset!(BaseTypeTuple!T).stringof);
         enum ParentOffset = ParentOffset!(BaseTypeTuple!T);
     }
     else
     {
-        //pragma(msg, "ZERO OFFSET: "~T.stringof);
-        enum ParentOffset = 0;
+        enum ParentOffset = (void*).sizeof;
     }
+}
+
+template Align(size_t offset)
+{
+    static if (offset % (void*).sizeof == 0)
+        enum Align = offset;
+    else
+        enum Align = offset + offset % (void*).sizeof;
 }
 
 template CppFieldsImpl(size_t offset, T...) if (T.length % 2 == 0)
 {
     static if (T.length == 2)
     {
-        //pragma(msg, "offset: " ~ offset.stringof);
         enum CppFieldsImpl = CppField!(T[0..2], offset) ~ `
-        enum _cpp_offset = ` ~ offset.stringof ~ `;`;
+                             enum _cpp_offset = ` ~ Align!(offset + T[0].sizeof).stringof ~ `;`;
     }
     else
     {
-        //enum CppFieldsImpl = CppField!(T[0..2], offset) ~ CppFieldsImpl!(offset + CppSizeOf!(T[0]), T[2..$]);
-        //pragma(msg, T[1] ~ ": " ~ offset.stringof);
         enum CppFieldsImpl = CppField!(T[0..2], offset) ~ CppFieldsImpl!(offset + T[0].sizeof/*GetOffset!(T[0])*/, T[2..$]);
     }
 }
 
-// This is required to get the correct offset
-/*template hasCppOffset(T)
-{
-    static if (is(typeof({ enum _ = T._cpp_offset; }())))
-    {
-        enum hasCppOffset = true;
-    }
-    else
-    {
-        enum hasCppOffset = false;
-    }
-    //enum hasCppOffset = hasCppOffsetImpl!(__traits(derivedMembers, T));
-}*/
-/*
-template hasCppOffsetImpl(T...)
-{
-    static if (T.length == 1)
-    {
-        static if (T[0] == "_cpp_offset")
-        {
-            enum hasCppOffsetImpl = true;
-        }
-        else
-        {
-            enum hasCppOffsetImpl = false;
-        }
-    }
-    else static if (T.length == 0)
-    {
-        enum hasCppOffsetImpl = 0;
-    }
-    else
-    {
-        enum hasCppOffsetImpl = hasCppOffsetImpl!(T[0]) && hasCppOffsetImpl!(T[1..$]);
-    }
-}*/
-
 template CppField(T, string name, size_t offset)
 {
     //pragma(msg, T.stringof ~ ": " ~ name ~ ": " ~ offset.stringof);
-    //static assert(name != "frequire");
+    //pragma(msg, name ~ " offset: " ~ offset.stringof ~ " sizeof: " ~ T.sizeof.stringof);
     enum CppField = `import std.stdio;extern(D)final ` ~ T.stringof ~ ` ` ~ name ~ `() @property
     {
-        //asm { int 3; }
-        //auto t = cast(typeof(this))this;
-        //writefln("`~name~` cast &this: %x", cast(void*)&t);
-        //writefln("`~name~` &this: %x", cast(void*)&this);
-        //writefln("`~name~` this: %x", cast(void*)this);
         return *(cast(` ~ T.stringof ~ `*)(cast(void*)this + ` ~ offset.stringof ~ `));
     }
     /*
@@ -331,11 +258,5 @@ template CppField(T, string name, size_t offset)
         *cast(` ~ T.stringof ~ `*)(cast(void*)this + ` ~ offset.stringof ~ `) = _;
     }*/
     `;
-    /*static if (name == "loc") pragma(msg, name ~ " offset: " ~ offset.stringof ~ " sizeof: " ~ T.sizeof.stringof);
-    static if (name == "op") pragma(msg, name ~ " offset: " ~ offset.stringof~ " sizeof: " ~ T.sizeof.stringof);
-    static if (name == "type") pragma(msg, name ~ " offset: " ~ offset.stringof~ " sizeof: " ~ T.sizeof.stringof);
-    static if (name == "size") pragma(msg, name ~ " offset: " ~ offset.stringof~ " sizeof: " ~ T.sizeof.stringof);
-    static if (name == "parens") pragma(msg, name ~ " offset: " ~ offset.stringof~ " sizeof: " ~ T.sizeof.stringof);
-    static if (name == "e1") pragma(msg, name ~ " offset: " ~ offset.stringof~ " sizeof: " ~ T.sizeof.stringof);*/
 }
 

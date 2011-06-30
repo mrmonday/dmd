@@ -1,22 +1,13 @@
 #include "attrib.h"
 #include "expression.h"
+#include "init.h"
 #include "statement.h"
 #include <typeinfo>
 
-const char *toTypeString(Dsymbol *s)
-{
-    return typeid(*s).name();
-}
-
-const char *toTypeString(Statement *s)
-{
-    return typeid(*s).name();
-}
-
-const char *toTypeString(Expression *e)
-{
-    return typeid(*e).name();
-}
+const char *toTypeString(Initializer *i) { return typeid(*i).name(); }
+const char *toTypeString(Dsymbol *s) { return typeid(*s).name(); }
+const char *toTypeString(Statement *s) { return typeid(*s).name(); }
+const char *toTypeString(Expression *e) { return typeid(*e).name(); }
 
 LinkDeclaration *isLinkDeclaration(Dsymbol *d) { return dynamic_cast<LinkDeclaration*>(d); }
 

@@ -4,6 +4,7 @@ import bind.attrib;
 import bind.declaration;
 import bind.dsymbol : Dsymbol;
 import bind.expression;
+import bind.init;
 import bind.mars;
 import bind.module_;
 import bind.root;
@@ -95,6 +96,11 @@ void declToJsBuffer(VarDeclaration vd, Duffer buf)
     if (vd.parent && vd.parent.isFuncDeclaration())
     {
         buf.write(to!string(vd.toChars()));
+        if (vd.init)
+        {
+            buf.write(" = ");
+            vd.init.toJsBuffer(buf);
+        }
     }
     else
     {
@@ -230,5 +236,15 @@ void expToJsBuffer(DotVarExp dve, Duffer buf)
     dve.e1.toJsBuffer(buf);
     buf.writef(".%s", to!string(dve.var.toChars()));
     //dve.var.toJsBuffer(buf);
+}
+
+/**********************************************************
+ * Initializers
+ */
+
+void initToJsBuffer(ExpInitializer ei, Duffer buf)
+{
+    writefln("exp init2");
+    ei.exp.toJsBuffer(buf);
 }
 
