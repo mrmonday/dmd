@@ -96,10 +96,7 @@ void declToJsBuffer(VarDeclaration vd, Duffer buf)
     if (vd.parent && vd.parent.isFuncDeclaration())
     {
         if (vd.init)
-        {
-            //buf.write(" = ");
             vd.init.toJsBuffer(buf);
-        }
         else
             buf.write(to!string(vd.toChars()));
     }
@@ -151,6 +148,12 @@ void statementToJsBuffer(IfStatement ifs, Duffer buf)
 
 void statementToJsBuffer(ScopeStatement ss, Duffer buf)
 {
+    if (ss.statement.isForStatement())
+    {
+        ss.statement.toJsBuffer(buf);
+        return;
+    }
+
     buf.writeln("{");
     ss.statement.toJsBuffer(buf);
     buf.writeln("}");
@@ -168,13 +171,18 @@ void statementToJsBuffer(ReturnStatement rs, Duffer buf)
 void statementToJsBuffer(ForStatement fs, Duffer buf)
 {
     buf.write("for (");
-    forInit = true;
-    fs.init.toJsBuffer(buf);
-    forInit = false;
+    if (fs.init)
+    {
+        forInit = true;
+        fs.init.toJsBuffer(buf);
+        forInit = false;
+    }
     buf.write("; ");
-    fs.condition.toJsBuffer(buf);
+    if (fs.condition)
+        fs.condition.toJsBuffer(buf);
     buf.write("; ");
-    fs.increment.toJsBuffer(buf);
+    if (fs.increment)
+        fs.increment.toJsBuffer(buf);
     buf.write(") ");
     fs.body_.toJsBuffer(buf);
 }

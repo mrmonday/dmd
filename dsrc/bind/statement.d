@@ -74,6 +74,10 @@ interface Statement : DmObject
     CaseStatement isCaseStatement();
     DefaultStatement isDefaultStatement();
     LabelStatement isLabelStatement();
+    final ForStatement isForStatement()
+    {
+        return .isForStatement(this);
+    }
 
     final void toJsBuffer(Duffer buf)
     {
@@ -109,7 +113,7 @@ interface Statement : DmObject
             //writefln("expstatement: %s", to!string(toChars()));
             statementToJsBuffer(es, buf);
         }
-        else if (auto fs = isForStatement(this))
+        else if (auto fs = isForStatement())
         {
             statementToJsBuffer(fs, buf);
         }
