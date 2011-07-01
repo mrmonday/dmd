@@ -63,6 +63,8 @@ void declToJsBuffer(FuncDeclaration func, Duffer buf)
     {
         if (inClassDeclCtor)
             buf.writef("function %s(", className);
+        else if (inClosure)
+            buf.write("function(");
         else
             buf.writef("function %s(", to!string(func.toChars()));
     }
@@ -86,7 +88,7 @@ void declToJsBuffer(FuncDeclaration func, Duffer buf)
     {
         buf.writeln(") {");
         func.fbody.toJsBuffer(buf);
-        buf.writeln("}");
+        buf.writeln(inClosure ? "};" : "}");
     }
     else
     {
@@ -119,16 +121,31 @@ void declToJsBuffer(LinkDeclaration ld, Duffer buf)
 }
 
 bool inClassDeclCtor = false;
+bool inClosure;
 string className;
 
 void declToJsBuffer(ClassDeclaration cd, Duffer buf)
 {
     inClassDeclCtor = true;
+    buf.write("/** @constructor */ "); // Keep Closure happy
     className = to!string(cd.toChars());
     cd.ctor.toJsBuffer(buf);
     inClassDeclCtor = false;
-    if (cd.vtbl.dim || cd.vtblFinal.dim)
-        assert(0, "methods in classes unimplemented");
+    inClosure = true;
+    foreach (vtbl; [cd.vtbl, cd.vtblFinal])
+    {
+        foreach (Dsymbol d; vtbl)
+        {
+            auto fd = d.isFuncDeclaration();
+            if (fd && fd.fbody)
+            {
+                buf.writef("%s.prototype.%s = ", to!string(cd.toChars()), to!string(fd.toChars()));
+                fd.toJsBuffer(buf);
+            }
+        }
+    }
+    inClosure = false;
+    // TODO Handle inheritance
 }
 
 /**********************************************************
@@ -291,6 +308,27 @@ void expToJsBuffer(IndexExp ie, Duffer buf)
     buf.write("[");
     ie.e2.toJsBuffer(buf);
     buf.write("]");
+}
+
+void expToJsBuffer(NewExp ne, Duffer buf)
+{
+    if (ne.thisexp !is null)
+    {
+        error(ne.loc, "");
+        assert(0);
+    }
+    buf.writef("new %s(", to!string(ne.newtype.toChars()));
+    uint i;
+    foreach (Expression e; ne.arguments)
+    {
+        i++;
+        e.toJsBuffer(buf);
+        if (i < ne.arguments.dim)
+        {
+            buf.write(", ");
+        }
+    }
+    buf.write(")");
 }
 
 /**********************************************************

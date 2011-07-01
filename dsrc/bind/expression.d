@@ -173,6 +173,10 @@ interface Expression : DmObject
         {
             buf.write("this");
         }
+        else if (auto ne = isNewExp(this))
+        {
+            expToJsBuffer(ne, buf);
+        }
         else if (auto ce = isCmpExp(this))
         {
             switch (ce.op)
@@ -212,6 +216,10 @@ interface Expression : DmObject
         {
             expToJsBuffer(ie, buf);
         }
+        else if (auto ae = isAssertExp(this))
+        {
+            stderr.writefln("warning: ignoring assert() exp");
+        }
         else
         {
             stderr.writefln("unhandled expression: %s", to!string(toChars()));
@@ -230,6 +238,7 @@ void expToJsBuffer(DotVarExp dve, Duffer buf);
 void expToJsBuffer(ArrayLiteralExp ale, Duffer buf);
 void expToJsBuffer(SliceExp se, Duffer buf);
 void expToJsBuffer(IndexExp ie, Duffer buf);
+void expToJsBuffer(NewExp ne, Duffer buf);
 
 interface IntegerExp : Expression
 {
@@ -311,6 +320,18 @@ interface TemplateExp : Expression
 
 interface NewExp : Expression
 {
+    mixin CppFields!(NewExp,
+        /* thisexp.new(newargs) newtype(arguments)
+         */
+        Expression, "thisexp",        // if !NULL, 'this' for class being allocated
+        Expressions, "newargs",       // Array of Expression's to call new operator
+        Type, "newtype",
+        Expressions, "arguments",     // Array of Expression's
+
+        CtorDeclaration, "member",    // constructor function
+        NewDeclaration, "allocator",  // allocator function
+        int, "onstack"                // allocate on stack
+    );
 }
 
 interface NewAnonClassExp : Expression

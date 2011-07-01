@@ -6,6 +6,7 @@ import bind.identifier;
 import bind.mars;
 import bind.root;
 import bind.scope_;
+import bind.util;
 
 extern(C++):
 
@@ -13,6 +14,9 @@ struct CppMangleState;
 
 interface Type : DmObject
 {
+    mixin CppMethods!(Type,
+        "toChars", char*
+    );
     void foo();
     void bar();
     
@@ -45,6 +49,7 @@ interface Type : DmObject
     Type makeMutable();
     // BUG Missing rest
 }
+mixin(Type.cppMethods);
 
 interface TypeNext : Type
 {

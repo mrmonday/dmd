@@ -51,7 +51,7 @@ struct Duffer
         hasWritten = true;
     }
 
-    void writef(T)(string str, T params)
+    void writef(T...)(string str, T params)
     {
         insertTabs();
         formattedWrite(buf, str, params);
@@ -59,7 +59,7 @@ struct Duffer
         hasWritten = true;
     }
 
-    void writefln(T)(string str, T params)
+    void writefln(T...)(string str, T params)
     {
         insertTabs();
         formattedWrite(buf, str, params);
