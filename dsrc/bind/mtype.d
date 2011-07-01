@@ -1,11 +1,49 @@
 module bind.mtype;
 
+import bind.dsymbol;
+import bind.hdrgen;
+import bind.identifier;
+import bind.mars;
 import bind.root;
+import bind.scope_;
 
 extern(C++):
 
+struct CppMangleState;
+
 interface Type : DmObject
 {
+    void foo();
+    void bar();
+    
+    Type syntaxCopy();
+    ulong size(Loc loc);
+    uint alignsize();
+    Type semantic(Loc loc, Scope sc);
+    void toDecoBuffer(OutBuffer buf, int flag = 0);
+    void toCBuffer(OutBuffer buf, Identifier ident, HdrGenState *hgs);
+    void toCBuffer2(OutBuffer buf, HdrGenState *hgs, int mod);
+    void toCppMangle(OutBuffer buf, CppMangleState cms);
+    int isintegral();
+    int isfloating();   // real, imaginary, or complex
+    int isreal();
+    int isimaginary();
+    int iscomplex();
+    int isscalar();
+    int isunsigned();
+    int isscope();
+    int isString();
+    int isAssignable();
+    int checkBoolean(); // if can be converted to boolean value
+    void checkDeprecated(Loc loc, Scope sc);
+    Type makeConst();
+    Type makeInvariant();
+    Type makeShared();
+    Type makeSharedConst();
+    Type makeWild();
+    Type makeSharedWild();
+    Type makeMutable();
+    // BUG Missing rest
 }
 
 interface TypeNext : Type

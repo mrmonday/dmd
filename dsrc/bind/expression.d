@@ -54,7 +54,7 @@ interface Expression : DmObject
     Expression semantic(Scope*sc);
     void dump(int indent);
     void rvalue();
-    ulong toInteger();
+    long toInteger();
     ulong toUInteger();
     real toReal();
     real toImaginary();
@@ -98,7 +98,10 @@ interface Expression : DmObject
         //writefln("expression: %s", to!string(toChars()));
         if (auto ie = isIntegerExp(this))
         {
-            buf.write(to!string(ie.toInteger()));
+            if (ie.type.isunsigned())
+                buf.write(to!string(ie.toUInteger()));
+            else
+                buf.write(to!string(ie.toInteger()));
         }
         else if (auto re = isRealExp(this))
         {
@@ -121,6 +124,17 @@ interface Expression : DmObject
         else if (auto ae = isAddAssignExp(this))
         {
             binExpToJsBuffer!"+="(ae, buf);
+        }
+        else if (auto ae = isMinAssignExp(this))
+        {
+            binExpToJsBuffer!"-="(ae, buf);
+        }
+        else if (auto ae = isEqualExp(this))
+        {
+            if (ae.op == TOK.TOKequal)
+                binExpToJsBuffer!"==="(ae, buf);
+            else
+                binExpToJsBuffer!"!=="(ae, buf);
         }
         else if (auto ve = isVarExp(this))
         {
@@ -684,6 +698,7 @@ PreExp isPreExp(Expression e);
 AssignExp isAssignExp(Expression e);
 ConstructExp isConstructExp(Expression e);
 AddAssignExp isAddAssignExp(Expression e);
+MinAssignExp isMinAssignExp(Expression e);
 // TODO Missing auto-generated
 PowAssignExp isPowAssignExp(Expression e);
 AddExp isAddExp(Expression e);

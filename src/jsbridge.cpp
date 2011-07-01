@@ -81,6 +81,7 @@ PreExp *isPreExp(Expression *e) { return dynamic_cast<PreExp*>(e); }
 AssignExp *isAssignExp(Expression *e) { return dynamic_cast<AssignExp*>(e); }
 ConstructExp *isConstructExp(Expression *e) { return dynamic_cast<ConstructExp*>(e); }
 AddAssignExp *isAddAssignExp(Expression *e) { return dynamic_cast<AddAssignExp*>(e); }
+MinAssignExp *isMinAssignExp(Expression *e) { return dynamic_cast<MinAssignExp*>(e); }
 // Missing mixin-generated
 PowAssignExp *isPowAssignExp(Expression *e) { return dynamic_cast<PowAssignExp*>(e); }
 AddExp *isAddExp(Expression *e) { return dynamic_cast<AddExp*>(e); }
