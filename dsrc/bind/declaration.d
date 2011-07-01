@@ -26,24 +26,6 @@ enum Semantic
     Semantic2Done,      // semantic2() has been run
 }
 
-enum BUILTIN
-{
-    BUILTINunknown = -1,        // not known if this is a builtin
-    BUILTINnot,                 // this is not a builtin
-    BUILTINsin,                 // std.math.sin
-    BUILTINcos,                 // std.math.cos
-    BUILTINtan,                 // std.math.tan
-    BUILTINsqrt,                // std.math.sqrt
-    BUILTINfabs,                // std.math.fabs
-}
-
-enum ILS
-{
-    ILSuninitialized,   // not computed yet
-    ILSno,              // cannot inline
-    ILSyes,             // can inline
-}
-
 interface Declaration : Dsymbol
 {
     mixin CppFields!(Declaration,
@@ -55,43 +37,142 @@ interface Declaration : Dsymbol
         int, "inuse",                  // used to detect cycles
         Semantic, "sem"
     );
-    /*Declaration(Identifier *id);
-    void semantic(Scope *sc);
-    const char *kind();
-    unsigned size(Loc loc);
-    void checkModify(Loc loc, Scope *sc, Type *t);
+}
 
-    void emitComment(Scope *sc);
-    void toJsonBuffer(OutBuffer *buf);
-    void toDocBuffer(OutBuffer *buf);
+interface TupleDeclaration : Declaration
+{
+}
 
-    char *mangle();
-    int isStatic() { return storage_class & STCstatic; }*/
-    int isDelete();
-    int isDataseg();
-    int isThreadlocal();
-    int isCodeseg();
-    /*
-    int isCtorinit()     { return storage_class & STCctorinit; }
-    int isFinal()        { return storage_class & STCfinal; }
-    int isAbstract()     { return storage_class & STCabstract; }
-    int isConst()        { return storage_class & STCconst; }
-    int isImmutable()    { return storage_class & STCimmutable; }
-    int isAuto()         { return storage_class & STCauto; }
-    int isScope()        { return storage_class & STCscope; }
-    int isSynchronized() { return storage_class & STCsynchronized; }
-    int isParameter()    { return storage_class & STCparameter; }
-    int isDeprecated()   { return storage_class & STCdeprecated; }
-    int isOverride()     { return storage_class & STCoverride; }
-    int isResult()       { return storage_class & STCresult; }
+interface TypedefDeclaration : Declaration
+{
+}
 
-    int isIn()    { return storage_class & STCin; }
-    int isOut()   { return storage_class & STCout; }
-    int isRef()   { return storage_class & STCref; }
+interface AliasDeclaration : Declaration
+{
+}
 
-    enum PROT prot();
 
-    Declaration *isDeclaration() { return this; }*/
+
+interface VarDeclaration : Declaration
+{
+    mixin CppFields!(VarDeclaration,
+        Initializer, "init",
+        uint, "offset",
+        int, "noscope",                 // no auto semantics
+        FuncDeclarationsRaw, "nestedrefs", // referenced by these lexically nested functions
+        bool, "isargptr",              // if parameter that _argptr points to
+        int, "ctorinit",               // it has been initialized in a ctor
+        int, "onstack",                // 1: it has been allocated on the stack
+                                    // 2: on stack, run deinterfaceor anyway
+        int, "canassign",              // it can be assigned to
+        Dsymbol, "aliassym",          // if redone as alias to another symbol
+
+        // When interpreting, these hold the value (NULL if value not determinable)
+        // The various functions are used only to detect compiler CTFE bugs
+        Expression, "literalvalue"
+    );
+}
+
+interface SymbolDeclaration : Declaration
+{
+}
+
+interface ClassInfoDeclaration : VarDeclaration
+{
+}
+
+interface ModuleInfoDeclaration : VarDeclaration
+{
+}
+
+interface TypeInfoDeclaration : VarDeclaration
+{
+}
+
+interface TypeInfoStructDeclaration : TypeInfoDeclaration
+{
+}
+
+interface TypeInfoClassDeclaration : TypeInfoDeclaration
+{
+}
+
+interface TypeInfoInterfaceDeclaration : TypeInfoDeclaration
+{
+}
+
+interface TypeInfoTypedefDeclaration : TypeInfoDeclaration
+{
+}
+
+interface TypeInfoPointerDeclaration : TypeInfoDeclaration
+{
+}
+
+interface TypeInfoArrayDeclaration : TypeInfoDeclaration
+{
+}
+
+interface TypeInfoStaticArrayDeclaration : TypeInfoDeclaration
+{
+}
+
+interface TypeInfoAssociativeArrayDeclaration : TypeInfoDeclaration
+{
+}
+
+interface TypeInfoEnumDeclaration : TypeInfoDeclaration
+{
+}
+
+interface TypeInfoFunctionDeclaration : TypeInfoDeclaration
+{
+}
+
+interface TypeInfoDelegateDeclaration : TypeInfoDeclaration
+{
+}
+
+interface TypeInfoTupleDeclaration : TypeInfoDeclaration
+{
+}
+
+interface TypeInfoConstDeclaration : TypeInfoDeclaration
+{
+}
+
+interface TypeInfoInvariantDeclaration : TypeInfoDeclaration
+{
+}
+
+interface TypeInfoSharedDeclaration : TypeInfoDeclaration
+{
+}
+
+interface TypeInfoWildDeclaration : TypeInfoDeclaration
+{
+}
+
+interface ThisDeclaration : VarDeclaration
+{
+}
+
+enum ILS
+{
+    ILSuninitialized,   // not computed yet
+    ILSno,              // cannot inline
+    ILSyes,             // can inline
+}
+
+enum BUILTIN
+{
+    BUILTINunknown = -1,        // not known if this is a builtin
+    BUILTINnot,                 // this is not a builtin
+    BUILTINsin,                 // std.math.sin
+    BUILTINcos,                 // std.math.cos
+    BUILTINtan,                 // std.math.tan
+    BUILTINsqrt,                // std.math.sqrt
+    BUILTINfabs,                // std.math.fabs
 }
 
 interface FuncDeclaration : Declaration
@@ -204,22 +285,55 @@ interface FuncDeclaration : Declaration
 }
 mixin(FuncDeclaration.cppMethods);
 
-interface VarDeclaration : Declaration
+interface FuncAliasDeclaration : FuncDeclaration
 {
-    mixin CppFields!(VarDeclaration,
-        Initializer, "init",
-        uint, "offset",
-        int, "noscope",                 // no auto semantics
-        FuncDeclarationsRaw, "nestedrefs", // referenced by these lexically nested functions
-        bool, "isargptr",              // if parameter that _argptr points to
-        int, "ctorinit",               // it has been initialized in a ctor
-        int, "onstack",                // 1: it has been allocated on the stack
-                                    // 2: on stack, run destructor anyway
-        int, "canassign",              // it can be assigned to
-        Dsymbol, "aliassym",          // if redone as alias to another symbol
-
-        // When interpreting, these hold the value (NULL if value not determinable)
-        // The various functions are used only to detect compiler CTFE bugs
-        Expression, "literalvalue"
-    );
 }
+
+interface FuncLiteralDeclaration : FuncDeclaration
+{
+}
+
+interface CtorDeclaration : FuncDeclaration
+{
+}
+
+interface PostBlitDeclaration : FuncDeclaration
+{
+}
+
+interface DtorDeclaration : FuncDeclaration
+{
+}
+
+interface StaticCtorDeclaration : FuncDeclaration
+{
+}
+
+interface SharedStaticCtorDeclaration : StaticCtorDeclaration
+{
+}
+
+interface StaticDtorDeclaration : FuncDeclaration
+{
+}
+
+interface SharedStaticDtorDeclaration : StaticDtorDeclaration
+{
+}
+
+interface InvariantDeclaration : FuncDeclaration
+{
+}
+
+interface UnitTestDeclaration : FuncDeclaration
+{
+}
+
+interface NewDeclaration : FuncDeclaration
+{
+}
+
+interface DeleteDeclaration : FuncDeclaration
+{
+}
+

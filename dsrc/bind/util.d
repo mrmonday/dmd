@@ -246,7 +246,7 @@ template CppFieldsImpl(size_t offset, T...) if (T.length % 2 == 0)
 template CppField(T, string name, size_t offset)
 {
     //pragma(msg, T.stringof ~ ": " ~ name ~ ": " ~ offset.stringof);
-    //pragma(msg, name ~ " offset: " ~ offset.stringof ~ " sizeof: " ~ T.sizeof.stringof);
+    //static if (name == "inuse")pragma(msg, name ~ " offset: " ~ offset.stringof ~ " sizeof: " ~ T.sizeof.stringof);
     enum CppField = `import std.stdio;extern(D)final ` ~ T.stringof ~ ` ` ~ name ~ `() @property
     {
         return *(cast(` ~ T.stringof ~ `*)(cast(void*)this + ` ~ offset.stringof ~ `));

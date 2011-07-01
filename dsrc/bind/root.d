@@ -80,44 +80,4 @@ interface OutBuffer : DmObject
         uint, "offset",
         uint, "size"
     );
-/*
-    void *extractData();
-    void mark();
-
-    void reserve(unsigned nbytes);
-    void setsize(unsigned size);
-    void reset();
-    void write(const void *data, unsigned nbytes);
-    void writebstring(unsigned char *string);
-    void writestring(const char *string);
-    void writedstring(const char *string);
-    void writedstring(const wchar_t *string);
-    void prependstring(const char *string);
-    void writenl();                     // write newline
-    void writeByte(unsigned b);
-    void writebyte(unsigned b) { writeByte(b); }
-    void writeUTF8(unsigned b);
-    void writedchar(unsigned b);
-    void prependbyte(unsigned b);
-    void writeword(unsigned w);
-    void writeUTF16(unsigned w);
-    void write4(unsigned w);
-    void write(OutBuffer *buf);
-    void write(Object *obj);
-    void fill0(unsigned nbytes);
-    void align(unsigned size);
-    void vprintf(const char *format, va_list args);
-    void printf(const char *format, ...);
-#if M_UNICODE
-    void vprintf(const unsigned short *format, va_list args);
-    void printf(const unsigned short *format, ...);
-#endif
-    void bracket(char left, char right);
-    unsigned bracket(unsigned i, const char *left, unsigned j, const char *right);
-    void spread(unsigned offset, unsigned nbytes);
-    unsigned insert(unsigned offset, const void *data, unsigned nbytes);
-    void remove(unsigned offset, unsigned nbytes);
-    char *toChars();
-    char *extractString();
-    */
 }

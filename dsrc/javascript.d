@@ -1,5 +1,6 @@
 module javascript;
 
+import bind.aggregate;
 import bind.attrib;
 import bind.declaration;
 import bind.dsymbol : Dsymbol;
@@ -60,7 +61,10 @@ void declToJsBuffer(FuncDeclaration func, Duffer buf)
 
     if (!func.isMain())
     {
-        buf.writef("function %s(", to!string(func.toChars()));
+        if (inClassDeclCtor)
+            buf.writef("function %s(", className);
+        else
+            buf.writef("function %s(", to!string(func.toChars()));
     }
     if (func.parameters)
     {
@@ -112,10 +116,19 @@ void declToJsBuffer(LinkDeclaration ld, Duffer buf)
         fatal();
     }
    // Ignore everything, it's just so it can be used.
-   /* foreach (Dsymbol d; ld.decl)
-    {
+}
 
-    }*/
+bool inClassDeclCtor = false;
+string className;
+
+void declToJsBuffer(ClassDeclaration cd, Duffer buf)
+{
+    inClassDeclCtor = true;
+    className = to!string(cd.toChars());
+    cd.ctor.toJsBuffer(buf);
+    inClassDeclCtor = false;
+    if (cd.vtbl.dim || cd.vtblFinal.dim)
+        assert(0, "methods in classes unimplemented");
 }
 
 /**********************************************************
@@ -159,7 +172,7 @@ void statementToJsBuffer(ScopeStatement ss, Duffer buf)
 
 void statementToJsBuffer(ReturnStatement rs, Duffer buf)
 {
-    if (isMain)
+    if (isMain || inClassDeclCtor)
         return;
     buf.write("return ");
     rs.exp.toJsBuffer(buf);

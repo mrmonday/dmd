@@ -60,6 +60,7 @@ LinkDeclaration isLinkDeclaration(Dsymbol d);
 void declToJsBuffer(FuncDeclaration, Duffer);
 void declToJsBuffer(VarDeclaration, Duffer);
 void declToJsBuffer(LinkDeclaration, Duffer);
+void declToJsBuffer(ClassDeclaration, Duffer);
 
 enum PROT
 {
@@ -220,7 +221,7 @@ interface Dsymbol : DmObject
         else if (auto cd = isClassDeclaration())
         {
             writefln("class:   %s", to!string(toChars()));
-            assert(0);
+            declToJsBuffer(cd, buf);
         }
         else if (auto vd = isVarDeclaration())
         {
@@ -258,6 +259,6 @@ interface ScopeDsymbol : Dsymbol
         DsymbolTable*, "symtab",       // members[] sorted into table
 
         Array, "imports",            // imported ScopeDsymbol's
-        ubyte, "prots"       // array of PROT, one for each import
+        ubyte*, "prots"       // array of PROT, one for each import
     );
 }

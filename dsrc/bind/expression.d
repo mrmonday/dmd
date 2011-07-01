@@ -169,6 +169,10 @@ interface Expression : DmObject
         {
             de.declaration.toJsBuffer(buf);
         }
+        else if (auto te = isThisExp(this))
+        {
+            buf.write("this");
+        }
         else if (auto ce = isCmpExp(this))
         {
             switch (ce.op)
