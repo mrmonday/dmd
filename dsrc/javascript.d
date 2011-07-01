@@ -50,6 +50,7 @@ void js_generate(Array modules)
  */
 
 bool isMain = false;
+bool inParam = false;
 
 // BUG in/out contracts
 void declToJsBuffer(FuncDeclaration func, Duffer buf)
@@ -64,6 +65,7 @@ void declToJsBuffer(FuncDeclaration func, Duffer buf)
     if (func.parameters)
     {
         uint i;
+        inParam = true;
         foreach (Dsymbol d; func.parameters)
         {
             i++;
@@ -74,6 +76,7 @@ void declToJsBuffer(FuncDeclaration func, Duffer buf)
                 buf.write(", ");
             }
         }
+        inParam = false;
     }
     if (!func.isMain())
     {
@@ -93,17 +96,12 @@ void declToJsBuffer(FuncDeclaration func, Duffer buf)
 
 void declToJsBuffer(VarDeclaration vd, Duffer buf)
 {
-    if (vd.parent && vd.parent.isFuncDeclaration())
-    {
-        if (vd.init)
-            vd.init.toJsBuffer(buf);
-        else
-            buf.write(to!string(vd.toChars()));
-    }
+    if (vd.init)
+        vd.init.toJsBuffer(buf);
+    else if (inParam)
+        buf.write(to!string(vd.toChars()));
     else
-    {
-        assert(0);
-    }
+        buf.writef("var %s", to!string(vd.toChars()));
 }
 
 void declToJsBuffer(LinkDeclaration ld, Duffer buf)
