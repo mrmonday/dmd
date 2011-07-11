@@ -1362,7 +1362,9 @@ int main(int argc, char *argv[])
     if (global.errors)
         fatal();
 
-    if (!global.params.objfiles->dim)
+    if (global.params.doJsGeneration)
+        ;
+    else if (!global.params.objfiles->dim)
     {
         if (global.params.link)
             error("no object files to link");
