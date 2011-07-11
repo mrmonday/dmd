@@ -126,9 +126,34 @@ string className;
 
 void declToJsBuffer(ClassDeclaration cd, Duffer buf)
 {
+    className = to!string(cd.toChars());
+    /*
+      class B : A
+      {
+      }
+      --
+      B.prototype = new A;
+      B.prototype.constructor = B;
+      function B()
+      {
+          A.call(this);
+      }
+        BUG: Doesn't work with overriden methods
+        BUG: this.__ctor(); needs to be recognised as a super call
+    */
+    if (cd.baseclasses)
+    {
+        assert(cd.baseclasses.dim == 1);
+        auto bc = cast(BaseClass*)cd.baseclasses.data[0];
+        if (bc)
+        {
+            //writefln("baseclass: %s", to!string(bc.base.toChars()));
+            buf.writefln("%s.prototype = new %s;", className, to!string(bc.base.toChars()));
+            buf.writefln("%s.prototype.constructor = %s;", className, className);
+        }
+    }
     inClassDeclCtor = true;
     buf.write("/** @constructor */ "); // Keep Closure happy
-    className = to!string(cd.toChars());
     cd.ctor.toJsBuffer(buf);
     inClassDeclCtor = false;
     inClosure = true;
@@ -145,7 +170,6 @@ void declToJsBuffer(ClassDeclaration cd, Duffer buf)
         }
     }
     inClosure = false;
-    // TODO Handle inheritance
 }
 
 /**********************************************************
