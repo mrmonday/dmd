@@ -839,6 +839,20 @@ void FuncDeclaration::semantic3(Scope *sc)
     }
 #endif
 
+    if (frequire)
+    {
+        for (int i = 0; i < foverrides.dim; i++)
+        {
+            FuncDeclaration *fdv = (FuncDeclaration *)foverrides.data[i];
+
+            if (fdv->fbody && !fdv->frequire)
+            {
+                error("cannot have an in contract when overriden function %s does not have an in contract", fdv->toPrettyChars());
+                break;
+            }
+        }
+    }
+
     frequire = mergeFrequire(frequire);
     fensure = mergeFensure(fensure);
 
@@ -1777,7 +1791,7 @@ Statement *FuncDeclaration::mergeFrequire(Statement *sf)
         }
 
         sf = fdv->mergeFrequire(sf);
-        if (fdv->fdrequire)
+        if (sf && fdv->fdrequire)
         {
             //printf("fdv->frequire: %s\n", fdv->frequire->toChars());
             /* Make the call:
@@ -1788,15 +1802,13 @@ Statement *FuncDeclaration::mergeFrequire(Statement *sf)
             Expression *e = new CallExp(loc, new VarExp(loc, fdv->fdrequire, 0), eresult);
             Statement *s2 = new ExpStatement(loc, e);
 
-            if (sf)
-            {   Catch *c = new Catch(loc, NULL, NULL, sf);
-                Array *catches = new Array();
-                catches->push(c);
-                sf = new TryCatchStatement(loc, s2, catches);
-            }
-            else
-                sf = s2;
+            Catch *c = new Catch(loc, NULL, NULL, sf);
+            Array *catches = new Array();
+            catches->push(c);
+            sf = new TryCatchStatement(loc, s2, catches);
         }
+        else
+            return NULL;
     }
     return sf;
 }
@@ -2666,9 +2678,9 @@ enum PURE FuncDeclaration::isPure()
     TypeFunction *tf = (TypeFunction *)type;
     if (flags & FUNCFLAGpurityInprocess)
         setImpure();
-    enum PURE purity = tf->purity;
-    if (purity == PUREfwdref)
+    if (tf->purity == PUREfwdref)
         tf->purityLevel();
+    enum PURE purity = tf->purity;
     if (purity > PUREweak && needThis())
     {   // The attribute of the 'this' reference affects purity strength
         if (type->mod & (MODimmutable | MODwild))
@@ -2678,6 +2690,9 @@ enum PURE FuncDeclaration::isPure()
         else
             purity = PUREweak;
     }
+    tf->purity = purity;
+    // ^ This rely on the current situation that every FuncDeclaration has a
+    //   unique TypeFunction.
     return purity;
 }
 

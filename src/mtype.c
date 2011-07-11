@@ -1197,6 +1197,8 @@ Type *Type::toHeadMutable()
 
 Type *Type::pointerTo()
 {
+    if (ty == Terror)
+        return this;
     if (!pto)
     {   Type *t;
 
@@ -1208,6 +1210,8 @@ Type *Type::pointerTo()
 
 Type *Type::referenceTo()
 {
+    if (ty == Terror)
+        return this;
     if (!rto)
     {   Type *t;
 
@@ -1219,6 +1223,8 @@ Type *Type::referenceTo()
 
 Type *Type::arrayOf()
 {
+    if (ty == Terror)
+        return this;
     if (!arrayof)
     {   Type *t;
 
@@ -1701,6 +1707,8 @@ Expression *Type::getProperty(Loc loc, Identifier *ident)
     {
         if (ty == Tvoid)
             error(loc, "void does not have an initializer");
+        if (ty == Tfunction)
+            error(loc, "function does not have an initializer");
         e = defaultInitLiteral(loc);
     }
     else if (ident == Id::mangleof)
@@ -3993,7 +4001,6 @@ printf("index->ito->ito = x%x\n", index->ito->ito);
 
     switch (index->toBasetype()->ty)
     {
-        case Tbool:
         case Tfunction:
         case Tvoid:
         case Tnone:
@@ -5011,8 +5018,9 @@ Type *TypeFunction::semantic(Loc loc, Scope *sc)
                     size_t tdim = tt->arguments->dim;
                     for (size_t j = 0; j < tdim; j++)
                     {   Parameter *narg = (Parameter *)tt->arguments->data[j];
-                        narg->storageClass = fparam->storageClass;
+                        narg->storageClass |= fparam->storageClass;
                     }
+                    fparam->storageClass = 0;
                 }
 
                 /* Reset number of parameters, and back up one to do this fparam again,
@@ -5396,6 +5404,12 @@ bool TypeFunction::parameterEscapes(Parameter *p)
     /* Assume it escapes in the absence of better information.
      */
     return TRUE;
+}
+
+Expression *TypeFunction::defaultInit(Loc loc)
+{
+    error(loc, "function does not have a default initializer");
+    return new ErrorExp();
 }
 
 /***************************** TypeDelegate *****************************/
@@ -6021,9 +6035,6 @@ Type *TypeInstance::semantic(Loc loc, Scope *sc)
 
     if (!t)
     {
-#ifdef DEBUG
-        printf("2: ");
-#endif
         error(loc, "%s is used as a type", toChars());
         t = terror;
     }
